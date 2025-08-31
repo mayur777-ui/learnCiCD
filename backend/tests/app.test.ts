@@ -50,4 +50,46 @@ describe("Task API", () => {
     const getRes = await request(app).get("/Task");
     expect(getRes.body.task.find((t: any) => t.id === id)).toBeUndefined();
   });
+    it('should update an existing task', async () => {
+    // First, create a task
+    const postRes = await request(app)
+      .post('/Task')
+      .send({ taskDes: 'Original Task' });
+
+    const taskId = postRes.body.id;
+
+    // Update the task
+    const putRes = await request(app)
+      .put(`/Task/${taskId}`)
+      .send({ taskDes: 'Updated Task' });
+
+    expect(putRes.status).toBe(200);
+    expect(putRes.body).toHaveProperty('id', taskId);
+    expect(putRes.body).toHaveProperty('taskDes', 'Updated Task');
+
+    // Verify tasks array is updated
+    const getRes = await request(app).get('/Task');
+    expect(getRes.body.task[0]).toHaveProperty('taskDes', 'Updated Task');
+  });
+
+  it('should return 404 for non-existent task', async () => {
+    const res = await request(app)
+      .put('/Task/non-existent-id')
+      .send({ taskDes: 'Updated Task' });
+
+    expect(res.status).toBe(404);
+    expect(res.body).toHaveProperty('message', 'Task not found');
+  });
+
+  it('should return 400 if taskDes is missing', async () => {
+    const postRes = await request(app)
+      .post('/Task')
+      .send({ taskDes: 'Original Task' });
+
+    const taskId = postRes.body.id;
+
+    const res = await request(app).put(`/Task/${taskId}`).send({});
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty('message', 'taskDes required');
+  });
 });

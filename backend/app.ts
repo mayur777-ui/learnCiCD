@@ -25,6 +25,20 @@ app.post("/Task", (req, res) => {
   res.status(201).json(newTask);
 });
 
+app.put("/Task/:id", (req, res) => {
+  const { id } = req.params;
+  const { taskDes } = req.body;
+
+  if (!taskDes) return res.status(400).json({ message: "taskDes required" });
+
+  const task = app.locals.tasks.find((t: TaskType) => t.id === id);
+
+  if (!task) return res.status(404).json({ message: "Task not found" });
+
+  task.taskDes = taskDes;
+  res.status(200).json(task);
+});
+
 app.delete("/Task/:id", (req, res) => {
   const { id } = req.params;
   app.locals.tasks = app.locals.tasks.filter((task: TaskType) => task.id !== id);
